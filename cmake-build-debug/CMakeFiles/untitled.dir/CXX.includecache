@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/cygdrive/c/Users/pgi/CLionProjects/untitled/main.cpp
+libxml/HTMLparser.h
+-
+libxml/xpath.h
+-
+libxml/uri.h
+-
+curl/curl.h
+-
+stdlib.h
+-
+string.h
+-
+math.h
+-
+signal.h
+-
+

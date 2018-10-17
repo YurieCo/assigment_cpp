@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/cygdrive/c/Users/pgi/CLionProjects/untitled/main.c
+errno.h
+-
+stdlib.h
+-
+string.h
+-
+unistd.h
+-
+curl/multi.h
+-
+

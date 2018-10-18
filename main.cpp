@@ -176,7 +176,9 @@ xmlChar* grab_title(CURLM *multi_handle, memory *mem, char *url)
     }
 
     xmlChar *txt = xmlNodeListGetString(doc, nodeset->nodeTab[0], 1);
-    fprintf(stdin, "has title %s", txt);
+//    fprintf(stdin, "has title %s", txt);
+    printf("%s\n",reinterpret_cast<char*>(txt));
+
 
     xmlXPathFreeObject(result);
     return txt;

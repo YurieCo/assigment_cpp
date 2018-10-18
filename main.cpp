@@ -25,7 +25,18 @@ int max_total = 20000;
 int max_requests = 500;
 int max_link_per_page = 5;
 int follow_relative_links = 0;
-char *start_page = "https://www.reuters.com";
+
+//char *start_page = "https://www.reuters.com";
+//char *start_page2 = "https://repl.it";
+
+static  char *urls[] = {
+        "http://torrentsmd.com/",
+        "https://www.youtube.com/",
+        "https://repl.it/repls"
+};
+
+#define MAX 3 /* number of simultaneous transfers */
+#define CNT sizeof(urls)/sizeof(char *) /* total number of transfers to do */
 
 #include <libxml/HTMLparser.h>
 #include <libxml/xpath.h>
@@ -140,6 +151,37 @@ size_t follow_links(CURLM *multi_handle, memory *mem, char *url)
     return count;
 }
 
+xmlChar* grab_title(CURLM *multi_handle, memory *mem, char *url)
+{
+    int opts = HTML_PARSE_NOBLANKS | HTML_PARSE_NOERROR | \
+             HTML_PARSE_NOWARNING | HTML_PARSE_NONET;
+    htmlDocPtr doc = htmlReadMemory(mem->buf, mem->size, url, NULL, opts);
+    if(!doc)
+        return 0;
+    xmlChar *xpath = (xmlChar*) "//head/title/text()";
+    xmlXPathContextPtr context = xmlXPathNewContext(doc);
+    xmlXPathObjectPtr result = xmlXPathEvalExpression(xpath, context);
+
+    if(!result){
+        fprintf(stderr, "doesnt have title");
+        return 0;
+    }
+
+    xmlNodeSetPtr nodeset = result->nodesetval;
+
+    if(xmlXPathNodeSetIsEmpty(nodeset)) {
+        xmlXPathFreeObject(result);
+        fprintf(stderr, "error inside grab_title");
+        return 0;
+    }
+
+    xmlChar *txt = xmlNodeListGetString(doc, nodeset->nodeTab[0], 1);
+    fprintf(stdin, "has title %s", txt);
+
+    xmlXPathFreeObject(result);
+    return txt;
+}
+
 int is_html(char *ctype)
 {
     return ctype != NULL && strlen(ctype) > 10 && strstr(ctype, "text/html");
@@ -160,7 +202,10 @@ int main(void)
 #endif
 
     /* sets html start page */
-    curl_multi_add_handle(multi_handle, make_handle(start_page));
+    for(int i = 0; i < CNT; ++i) {
+        curl_multi_add_handle(multi_handle, make_handle(urls[i]));
+
+    }
 
     int msgs_left;
     int pending = 0;
@@ -189,7 +234,8 @@ int main(void)
                         printf("[%d] HTTP 200 (%s): %s\n", complete, ctype, url);
                         if(is_html(ctype) && mem->size > 100) {
                             if(pending < max_requests && (complete + pending) < max_total) {
-                                pending += follow_links(multi_handle, mem, url);
+                                grab_title(multi_handle, mem, url);
+//                                pending += follow_links(multi_handle, mem, url);
                                 still_running = 1;
                             }
                         }
@@ -214,78 +260,3 @@ int main(void)
     curl_global_cleanup();
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///***************************************************************************
-// *                                  _   _ ____  _
-// *  Project                     ___| | | |  _ \| |
-// *                             / __| | | | |_) | |
-// *                            | (__| |_| |  _ <| |___
-// *                             \___|\___/|_| \_\_____|
-// *
-// * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
-// *
-// * This software is licensed as described in the file COPYING, which
-// * you should have received as part of this distribution. The terms
-// * are also available at https://curl.haxx.se/docs/copyright.html.
-// *
-// * You may opt to use, copy, modify, merge, publish, distribute and/or sell
-// * copies of the Software, and permit persons to whom the Software is
-// * furnished to do so, under the terms of the COPYING file.
-// *
-// * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
-// * KIND, either express or implied.
-// *
-// ***************************************************************************/
-///* <DESC>
-// * Very simple HTTP GET
-// * </DESC>
-// */
-//
-//#include <stdio.h>
-//#include <curl/curl.h>
-//#include <libxml/xpath.h>
-//
-//
-//
-//int main(void)
-//{
-//    CURL *curl;
-//    CURLcode res;
-//
-//    curl = curl_easy_init();
-//    if(curl) {
-//        curl_easy_setopt(curl, CURLOPT_URL, "https://google.com");
-//        /* example.com is redirected, so we tell libcurl to follow redirection */
-//        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-//
-//        /* Perform the request, res will get the return code */
-//        res = curl_easy_perform(curl);
-//        /* Check for errors */
-//        if(res != CURLE_OK) {
-//            fprintf(stderr, "curl_easy_perform() failed: %s\n",
-//                    curl_easy_strerror(res));
-//        }
-//
-//        /* always cleanup */
-//        curl_easy_cleanup(curl);
-//    }
-//    return 0;
-//}

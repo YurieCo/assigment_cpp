@@ -9,7 +9,10 @@ find_package(CURL REQUIRED)
 find_package(libxml2 REQUIRED)
 
 
+#add_executable(untitled multilinker.cpp)
+#add_executable(untitled test.cpp)
 add_executable(untitled main.cpp)
+#add_executable(untitled test2.cpp)
 
 include_directories(${CURL_INCLUDE_DIR})
 target_link_libraries(untitled ${CURL_LIBRARIES})
